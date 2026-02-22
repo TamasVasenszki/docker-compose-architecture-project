@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Docker Compose Architecture Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 4px 6px;
+            border-radius: 4px;
+        }
+        .box {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Docker Compose Architecture Demo 🚀</h1>
+
+<p>
+    This project demonstrates a small containerized architecture using Docker Compose.
+</p>
+
+<div class="box">
+    <h2>Architecture Overview</h2>
+    <ul>
+        <li><strong>Nginx</strong> acts as a reverse proxy and load balancer.</li>
+        <li>Static files are served directly by Nginx.</li>
+        <li>API requests are forwarded to two backend instances.</li>
+        <li>Load balancing happens between <code>api1</code> and <code>api2</code>.</li>
+    </ul>
+</div>
+
+<div class="box">
+    <h2>Test the Load Balancer</h2>
+    <p>
+        Click the link below and refresh the page multiple times to see
+        which backend instance responds.
+    </p>
+    <p>
+        👉 <a href="/api/health"><strong>Check Backend Health</strong></a>
+    </p>
+</div>
+
+<div class="box">
+    <h2>How It Works</h2>
+    <ul>
+        <li>Client → Nginx (single entry point)</li>
+        <li>Nginx → Reverse proxy to backend upstream</li>
+        <li>Requests are distributed between two containers</li>
+    </ul>
+</div>
+
+</body>
+</html>
