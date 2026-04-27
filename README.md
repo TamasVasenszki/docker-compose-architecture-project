@@ -1,179 +1,199 @@
-# Docker Compose Architecture Demo
+# Docker Compose Architecture Project
 
-This project demonstrates a layered containerized infrastructure built with Docker Compose.
+A layered, containerized infrastructure demo built with Docker Compose, Nginx, Node.js, PostgreSQL, and isolated Docker networks.
 
-The goal of this project is not backend complexity, but infrastructure design, orchestration, and security-focused architecture.
+## About The Project
 
----
+This project demonstrates a small but realistic containerized application architecture. The focus is not on backend complexity, but on infrastructure design, service orchestration, network isolation, and operational thinking.
+
+The system contains multiple services that communicate through separate Docker networks. Nginx acts as the public entry point and load balancer, while PostgreSQL, backup, and analyzer services remain isolated on an internal network.
 
 ## Architecture Overview
 
-The system consists of:
-
-- **Nginx** as a reverse proxy and single entry point
-- **Two backend instances** (Node.js) with load balancing
-- **PostgreSQL database** with persistent storage
-- **Backup container** for database dumps
-- **Analyzer container** for report generation
-- **Separated Docker networks** (public and internal)
-
-### High-Level Flow
-
-```
+```text
 Browser
-   ↓
-Nginx (public_net)
-   ↓
-api1 / api2
-   ↓
-PostgreSQL (internal_net)
-   ↓
-Backup → Analyzer
+  ↓
+Nginx reverse proxy (public network)
+  ↓
+api1 / api2 Node.js backend containers
+  ↓
+PostgreSQL database (internal network)
+  ↓
+Backup container
+  ↓
+Analyzer container
 ```
 
----
+### Main Components
 
-## Key DevOps Concepts Demonstrated
+- **Nginx** as a reverse proxy and single public entry point
+- **Two Node.js backend containers** to demonstrate load balancing
+- **PostgreSQL** with persistent storage
+- **Backup container** for database dump operations
+- **Analyzer container** for processing backup files and generating reports
+- **Separated Docker networks** for public and internal communication
 
+## Built With
+
+- Docker
+- Docker Compose
+- Node.js
+- Express
+- Nginx
+- PostgreSQL
+- Alpine Linux
+
+## Key Concepts Demonstrated
+
+- Multi-container application orchestration
 - Reverse proxy configuration
 - Load balancing between backend containers
-- Docker multi-service orchestration
 - Persistent Docker volumes
-- One-off automation containers
-- Network isolation (internal-only network)
-- Principle of least privilege
+- One-off operational containers
+- Internal-only Docker networks
+- Environment-based configuration
+- Basic infrastructure security principles
 
----
+## Getting Started
 
-## Security Design
+### Prerequisites
 
-- No credentials are stored in the repository
-- Environment variables are loaded from a local `.env` file
-- Internal services (database, backup, analyzer) run on an isolated network
-- Automation containers have no outbound internet access
-- Base images are pinned to LTS versions
+Make sure the following tools are installed:
 
----
+- Docker
+- Docker Compose
+- Git
 
-## Setup & Run
+### Installation
 
-### Clone the repository
+Clone the repository:
 
 ```bash
 git clone https://github.com/TamasVasenszki/docker-compose-architecture-project.git
 cd docker-compose-architecture-project
 ```
 
-### Create your environment file
+Create your local environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` if needed.
+Review the values in `.env` and update them if needed.
 
-### Start the infrastructure
+### Running The Project
+
+Start the full application stack:
 
 ```bash
 docker compose up -d --build
 ```
 
-Open in browser:
+Open the application in your browser:
 
-```
+```text
 http://localhost:8080
 ```
 
----
+The project uses port `8080` to avoid conflicts with services that commonly use port `5000` on macOS.
 
-## Health Check
+## Verification
 
-The backend exposes:
+### Check Running Containers
 
+```bash
+docker compose ps
 ```
+
+### Health Check
+
+The backend exposes a health endpoint:
+
+```text
 /api/health
 ```
 
-This endpoint:
+Example request:
 
-- Identifies which backend instance handled the request
-- Performs a live database connectivity check (`SELECT 1`)
+```bash
+curl http://localhost:8080/api/health
+```
 
----
+The response identifies which backend instance handled the request and verifies database connectivity.
 
-## Backup Job (One-Off Container)
+### Load Balancing Check
 
-Run a database backup:
+Run the health check multiple times. Responses should alternate between the two backend instances:
+
+```text
+api1
+api2
+```
+
+This confirms that Nginx is distributing traffic between the backend containers.
+
+## Backup Job
+
+Run a one-off backup container:
 
 ```bash
 docker compose run --rm backup sh
 ```
 
-Inside the container:
+Inside the container, create a database dump:
 
 ```bash
 pg_dump -h $DB_HOST -U $DB_USER $DB_NAME > /backups/backup.sql
 ```
 
-The backup is stored in a persistent Docker volume.
-
----
+The backup file is stored in a persistent Docker volume.
 
 ## Analyzer Job
 
-Run the analyzer:
+Run the analyzer container:
 
 ```bash
 docker compose run --rm analyzer
 ```
 
-This container:
+The analyzer reads the backup volume, generates a small report, writes the output to a persistent volume, and exits automatically.
 
-- Reads the latest backup from a shared volume
-- Generates a report (file size, line count, timestamp)
-- Writes output to a persistent volume
-- Exits automatically
+## Security Considerations
 
----
+- Credentials are not stored directly in the repository.
+- Environment variables are loaded from a local `.env` file.
+- PostgreSQL, backup, and analyzer services run on an internal-only Docker network.
+- Internal services are not exposed directly to the host machine.
+- Public access is routed through Nginx.
+- Docker images use explicit version tags instead of `latest` where possible.
 
-## Network Isolation
+## Testing And Quality Notes
 
-Internal services run on a Docker network with:
+This project currently focuses on infrastructure behavior and manual verification through health checks, container inspection, and backup/analyzer jobs.
 
-```yaml
-internal: true
-```
+Recommended next quality improvements:
 
-This prevents outbound internet access for:
+- Add automated API tests for the health endpoint.
+- Add smoke tests for Docker Compose startup.
+- Add CI checks for Docker image builds.
+- Add linting for shell scripts and configuration files.
 
-- PostgreSQL
-- Backup container
-- Analyzer container
+## Roadmap
 
-Only required communication paths are allowed.
-
----
-
-## Technologies Used
-
-- Docker & Docker Compose
-- Node.js (Active LTS)
-- Nginx
-- PostgreSQL
-- Alpine Linux
-
----
-
-## Future Improvements
-
-- Scheduled automated backups
-- CI pipeline for image builds
-- Image vulnerability monitoring
-- Healthcheck definitions in Compose
-- Infrastructure as Code extension (Terraform)
-
----
+- Add automated tests
+- Add Docker healthcheck definitions
+- Add scheduled backups
+- Add CI pipeline for image builds
+- Add image vulnerability scanning
+- Extend the project with Terraform-based infrastructure provisioning
 
 ## License
 
-MIT
+Distributed under the MIT License.
+
+## Author
+
+Tamás Vasenszki
+
+- GitHub: [TamasVasenszki](https://github.com/TamasVasenszki)
+- LinkedIn: [Tamás Vasenszki](https://www.linkedin.com/in/tamasvasenszki)
